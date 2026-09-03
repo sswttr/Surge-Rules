@@ -1,0 +1,44 @@
+# NAME: Claude-Full
+# UPDATED: 2026-09-03
+# FORMAT: Surge RULE-SET
+# PURPOSE: Claude web/app, Anthropic API, Claude Code, artifacts/files, auth, downloads, support and telemetry.
+# NOTE: Shared third-party domains are deliberately included for maximum coverage.
+
+# Anthropic / Claude core
+DOMAIN-SUFFIX,anthropic.com
+DOMAIN-SUFFIX,claude.ai
+DOMAIN-SUFFIX,claude.com
+DOMAIN-SUFFIX,claudeusercontent.com
+DOMAIN-SUFFIX,claudemcpclient.com
+DOMAIN-SUFFIX,clau.de
+DOMAIN-SUFFIX,trust.anthropic.com
+
+# Known exact service / CDN hosts
+DOMAIN,anthropic.com.cdn.cloudflare.net
+DOMAIN,servd-anthropic-website.b-cdn.net
+DOMAIN,pivot.claude.ai
+DOMAIN,bridge.claudeusercontent.com
+DOMAIN,platform.claude.com
+DOMAIN,code.claude.com
+DOMAIN,downloads.claude.ai
+DOMAIN,status.claude.com
+DOMAIN,support.claude.com
+DOMAIN,cdn.usefathom.com
+
+# Authentication
+DOMAIN,anthropic.auth0.com
+DOMAIN-SUFFIX,auth0.com
+
+# Telemetry / feature flags / support
+DOMAIN-SUFFIX,statsig.com
+DOMAIN-SUFFIX,statsigapi.net
+DOMAIN-SUFFIX,sentry.io
+DOMAIN-SUFFIX,datadoghq.com
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,intercomcdn.com
+DOMAIN-SUFFIX,usefathom.com
+DOMAIN,browser-intake-us5-datadoghq.com
+
+# Conservative keyword fallback
+DOMAIN-KEYWORD,anthropic
+DOMAIN-KEYWORD,claude

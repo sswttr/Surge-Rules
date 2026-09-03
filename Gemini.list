@@ -1,0 +1,37 @@
+# NAME: Gemini-Full
+# UPDATED: 2026-09-03
+# FORMAT: Surge RULE-SET
+# PURPOSE: Gemini web/app, Google AI Studio, Gemini API, DeepMind and Gemini-related backend services.
+# NOTE: Google infrastructure is highly shared. This list aims for broad Gemini coverage without routing all Google traffic.
+
+# Gemini / Bard / AI Studio core
+DOMAIN-SUFFIX,gemini.google.com
+DOMAIN-SUFFIX,gemini.google
+DOMAIN-SUFFIX,bard.google.com
+DOMAIN-SUFFIX,aistudio.google.com
+DOMAIN-SUFFIX,makersuite.google.com
+DOMAIN,ai.google.dev
+
+# Google Generative AI / DeepMind
+DOMAIN-SUFFIX,generativeai.google
+DOMAIN-SUFFIX,deepmind.google
+DOMAIN-SUFFIX,deepmind.com
+
+# Gemini / MakerSuite API backends
+DOMAIN-SUFFIX,generativelanguage.googleapis.com
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
+DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
+DOMAIN-SUFFIX,geller-pa.googleapis.com
+DOMAIN,alkalimakersuite-pa.clients6.google.com
+
+# Google API bootstrap used by AI Studio / Gemini
+DOMAIN-SUFFIX,apis.google.com
+
+# Conservative keyword fallbacks for dynamically named Google AI hosts
+DOMAIN-KEYWORD,gemini
+DOMAIN-KEYWORD,generativelanguage
+DOMAIN-KEYWORD,makersuite
+DOMAIN-KEYWORD,generativeai
+DOMAIN-KEYWORD,deepmind
+DOMAIN-KEYWORD,developerprofiles
+DOMAIN-KEYWORD,colab

@@ -1,0 +1,66 @@
+# NAME: ChatGPT-Full
+# UPDATED: 2026-09-03
+# FORMAT: Surge RULE-SET
+# PURPOSE: ChatGPT / OpenAI web, apps, API, auth, files, realtime, static resources and supporting services.
+# NOTE: Some shared third-party domains (e.g. Stripe/Intercom/Sentry/Statsig/WorkOS) may also carry unrelated traffic.
+
+# OpenAI / ChatGPT core
+DOMAIN-SUFFIX,chatgpt.com
+DOMAIN-SUFFIX,openai.com
+DOMAIN-SUFFIX,auth.openai.com
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,oaistatsig.com
+DOMAIN-SUFFIX,openaimerge.com
+DOMAIN-SUFFIX,sora.com
+DOMAIN-SUFFIX,ai.com
+
+# Realtime / voice / streaming
+DOMAIN-SUFFIX,chatgpt.livekit.cloud
+DOMAIN-SUFFIX,host.livekit.cloud
+DOMAIN-SUFFIX,turn.livekit.cloud
+
+# Auth / enterprise login
+DOMAIN-SUFFIX,auth0.com
+DOMAIN-SUFFIX,workos.com
+DOMAIN-SUFFIX,workoscdn.com
+DOMAIN,cdn.workos.com
+DOMAIN,forwarder.workos.com
+DOMAIN,setup.workos.com
+DOMAIN,images.workoscdn.com
+DOMAIN,workos.imgix.net
+
+# Security / challenge
+DOMAIN-SUFFIX,client-api.arkoselabs.com
+DOMAIN,openai-api.arkoselabs.com
+DOMAIN,challenges.cloudflare.com
+
+# Static / CDN / storage
+DOMAIN,chat.openai.com.cdn.cloudflare.net
+DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+DOMAIN,openaicomproductionae4b.blob.core.windows.net
+DOMAIN,production-openaicom-storage.azureedge.net
+DOMAIN-SUFFIX,openaiapi-site.azureedge.net
+DOMAIN-SUFFIX,openaicom.imgix.net
+DOMAIN,static.cloudflareinsights.com
+
+# Product support / analytics / telemetry
+DOMAIN-SUFFIX,intercom.io
+DOMAIN-SUFFIX,intercomcdn.com
+DOMAIN-SUFFIX,statsig.com
+DOMAIN-SUFFIX,statsigapi.net
+DOMAIN-SUFFIX,featuregates.org
+DOMAIN-SUFFIX,featureassets.org
+DOMAIN-SUFFIX,prodregistryv2.org
+DOMAIN-SUFFIX,sentry.io
+DOMAIN-SUFFIX,datadoghq.com
+DOMAIN-SUFFIX,segment.io
+DOMAIN-SUFFIX,launchdarkly.com
+DOMAIN-SUFFIX,observeit.net
+DOMAIN-SUFFIX,algolia.net
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,ct.sendgrid.net
+
+# Conservative keyword fallback
+DOMAIN-KEYWORD,openai
+DOMAIN-KEYWORD,chatgpt
