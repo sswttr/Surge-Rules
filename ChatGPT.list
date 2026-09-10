@@ -1,8 +1,14 @@
 # NAME: ChatGPT-Full
-# UPDATED: 2026-09-03
+# UPDATED: 2026-09-10
 # FORMAT: Surge RULE-SET
 # PURPOSE: ChatGPT / OpenAI web, apps, API, auth, files, realtime, static resources and supporting services.
 # NOTE: Some shared third-party domains (e.g. Stripe/Intercom/Sentry/Statsig/WorkOS) may also carry unrelated traffic.
+
+# Mac app process fallback (Surge Mac 6.0+ App Bundle mode)
+PROCESS-NAME,/Applications/ChatGPT.app/
+PROCESS-NAME,ChatGPT
+PROCESS-NAME,codex
+PROCESS-NAME,Codex (Service)
 
 # OpenAI / ChatGPT core
 DOMAIN-SUFFIX,chatgpt.com
