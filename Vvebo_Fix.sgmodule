@@ -3,15 +3,10 @@
 #!category=微博
 
 [Script]
-# 记录当前访问的用户 uid
 vvebo-user-show-req = type=http-request,pattern=^https?:\/\/api\.weibo\.cn\/2\/users\/show\?,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=10
 vvebo-user-show-res = type=http-response,pattern=^https?:\/\/api\.weibo\.cn\/2\/users\/show\?,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=10
-
-# 改写旧的用户时间线接口
 vvebo-timeline-req = type=http-request,pattern=^https?:\/\/api\.weibo\.cn\/2\/statuses\/user_timeline\?,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=10
-
-# 把新接口返回的数据转换回旧格式（仅处理带标记的请求，不影响官方客户端）
-vvebo-timeline-res = type=http-response,pattern=^https?:\/\/api\.weibo\.cn\/2\/profile\/statuses\/tab\?.*_vvebo_fix=1,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=10
+vvebo-timeline-res = type=http-response,pattern=^https?:\/\/api\.weibo\.cn\/2\/profile\/statuses\/tab\?.*_vvebo_fix=1,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=30
 
 [MITM]
 hostname = %APPEND% api.weibo.cn
