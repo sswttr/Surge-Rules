@@ -1,0 +1,146 @@
+#!name=国内常用App去广告 合并版（不含微博）
+#!desc=主攻开屏广告：淘宝、闲鱼、京东、美团、大众点评、滴滴、哔哩哔哩、百度地图、高德地图、知乎、小红书、同花顺、PICOOC 等；B站额外去除推荐/动态/播放页广告；附带微信公众号/朋友圈媒体广告与常见广告 SDK 拦截。需开启 MitM 并信任证书。
+#!category=去广告
+#!system=ios
+
+# ========================================================
+#  说明
+#  1. 本模块不包含任何微博 / 新浪相关规则与 MitM 主机名。
+#  2. 装好后建议清除各 App 缓存或删除重装一次（开屏素材常被预下载）。
+#  3. 若某个 App 出现无法联网，先把它的主机名从 [MITM] 中删掉排查。
+#  4. B站脚本来自 app2smile/rules，首次启用需能访问 raw.githubusercontent.com。
+# ========================================================
+
+[Rule]
+# ---------- 强制 QUIC 回落到 TCP，否则 MitM 抓不到 ----------
+AND,((PROTOCOL,UDP),(DEST-PORT,443)),REJECT-NO-DROP
+
+# ---------- 阿里系（淘宝/闲鱼/高德）：拒绝 AMDC 调度，让请求回落到可 MitM 的 HTTPS ----------
+DOMAIN,amdc.m.taobao.com,REJECT
+# 阿里统计上报
+DOMAIN,adashx.ut.taobao.com,REJECT
+DOMAIN,adashbc.ut.taobao.com,REJECT
+DOMAIN,adash-c.ut.taobao.com,REJECT
+DOMAIN,adash.man.aliyuncs.com,REJECT
+
+# ---------- 京东 ----------
+DOMAIN,dns.jd.com,REJECT
+DOMAIN-SUFFIX,dsp-x.jd.com,REJECT
+DOMAIN-SUFFIX,bdsp-x.jd.com,REJECT
+DOMAIN,ads-union.jd.com,REJECT
+DOMAIN,du.jd.com,REJECT
+
+# ---------- 微信：朋友圈广告图片/视频 CDN ----------
+DOMAIN,wxsnsdy.wxs.qq.com,REJECT
+DOMAIN,wxsmsdy.video.qq.com,REJECT
+DOMAIN,wxsnsdythumb.wxs.qq.com,REJECT
+
+# ---------- 小红书广告素材 CDN ----------
+DOMAIN,ads-img-qc.xhscdn.com,REJECT
+DOMAIN,ads-video-qc.xhscdn.com,REJECT
+DOMAIN,ads-img-al.xhscdn.com,REJECT
+DOMAIN,ads-video-al.xhscdn.com,REJECT
+
+# ---------- 知乎广告/追踪 ----------
+DOMAIN,sugar.zhihu.com,REJECT
+
+# ---------- 同花顺广告 ----------
+DOMAIN,adm.10jqka.com.cn,REJECT
+
+# ---------- 通用广告 SDK（覆盖 PICOOC 等使用第三方开屏 SDK 的 App，也会减少小程序广告） ----------
+# 腾讯广点通 / 优量汇
+DOMAIN-SUFFIX,gdt.qq.com,REJECT
+DOMAIN,sdk.e.qq.com,REJECT
+DOMAIN,pgdt.gtimg.cn,REJECT
+DOMAIN,pgdt.ugdtimg.com,REJECT
+DOMAIN,adsmind.gdtimg.com,REJECT
+DOMAIN,adsmind.ugdtimg.com,REJECT
+# 字节穿山甲
+DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+DOMAIN,pangolin.snssdk.com,REJECT
+DOMAIN,pangolin16.snssdk.com,REJECT
+DOMAIN,pangolin16.isnssdk.com,REJECT
+DOMAIN,pangolin-lq.snssdk.com,REJECT
+# 百度百青藤 / 百度联盟
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,cpro.baidu.com,REJECT
+DOMAIN,cpro.baidustatic.com,REJECT
+DOMAIN,dup.baidustatic.com,REJECT
+DOMAIN,cbjs.baidu.com,REJECT
+# 快手联盟
+DOMAIN,open.e.kuaishou.com,REJECT
+# Sigmob
+DOMAIN-SUFFIX,sigmob.cn,REJECT
+DOMAIN-SUFFIX,sigmob.com,REJECT
+
+[URL Rewrite]
+# ---------- 淘宝 / 闲鱼 开屏图片 ----------
+^https?:\/\/(gw|heic)\.alicdn\.com\/imgextra\/i\d\/\d*\/?[\w!]+-\d-(octopus|tps-1125-1602|tps-1080-1920)\.(jp|pn)g_(1\d{3}|9\d{2})x(1\d{3}|9\d{2})q[59]0 - reject
+
+# ---------- 美团 / 大众点评（玲珑广告平台）开屏图片与视频 ----------
+^https?:\/\/img\.meituan\.net\/(adunion|display|midas)\/ - reject
+^https?:\/\/p\d\.meituan\.net\/(adunion|display|linglong|mmc|wmbanner)\/ - reject
+^https?:\/\/(s3plus|flowplus)\.meituan\.net\/v\d\/\w+\/linglong\/ - reject
+^https?:\/\/s3plus\.meituan\.net\/v\d\/mss_\w+\/(brandcpt-vedio|waimai-alita)\/ - reject
+^https?:\/\/peisongapi\.meituan\.com\/client\/getInitiateImage - reject
+
+# ---------- 京东 广告图片 ----------
+^https?:\/\/img\d+\.360buyimg\.com\/jddjadvertise\/ - reject
+
+# ---------- 百度地图 ----------
+^https?:\/\/newclient\.map\.baidu\.com\/client\/phpui2\/\?qt=ads - reject
+^https?:\/\/newclient\.map\.baidu\.com\/client\/crossmarketing - reject
+
+# ---------- 高德地图 广告归因 ----------
+^https?:\/\/m5(-zb)?\.amap\.com\/ws\/asa\/ads_attribution - reject
+
+[Map Local]
+# 返回空 JSON，比直接拒绝更不容易让 App 卡住或重试
+
+# ---------- 淘宝 / 闲鱼 开屏接口 ----------
+^https?:\/\/guide-acs\.m\.taobao\.com\/gw\/mtop\.taobao\.wireless\.home\.splash\.awesome\.get data-type=text data="{}" status-code=200
+^https?:\/\/(acs|guide-acs)\.m\.(taobao|goofish)\.com\/gw\/mtop\.alibaba\.advertisementservice\.getadv data-type=text data="{}" status-code=200
+^https?:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.home\.welcome data-type=text data="{}" status-code=200
+
+# ---------- 京东 开屏 ----------
+^https?:\/\/api\.m\.jd\.com\/client\.action\?.*functionId=(start|home_launchConfig|queryMaterialAdverts)(&|$) data-type=text data="{}" status-code=200
+
+# ---------- 美团外卖 开屏 ----------
+^https?:\/\/wmapi\.meituan\.com\/api\/v\d+\/(loadInfo|openscreen|startpicture) data-type=text data="{}" status-code=200
+
+# ---------- 滴滴 开屏 / 活动弹窗 ----------
+^https?:\/\/res\.xiaojukeji\.com\/resapi\/activity\/(mget|xpget) data-type=text data="{}" status-code=200
+
+# ---------- 哔哩哔哩（splash/list 与 show 交给下方脚本处理，这里只清其余开屏/活动接口） ----------
+^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/(brand\/list|event\/list2) data-type=text data="{}" status-code=200
+^https?:\/\/app\.bilibili\.com\/x\/resource\/top\/activity data-type=text data="{}" status-code=200
+
+# ---------- 百度地图 通知条 ----------
+^https?:\/\/newclient\.map\.baidu\.com\/client\/noticebar\/get data-type=text data="{}" status-code=200
+
+# ---------- 高德地图 开屏 ----------
+^https?:\/\/m5\.amap\.com\/ws\/valueadded\/alimama\/splash_screen data-type=text data="{}" status-code=200
+
+# ---------- 知乎 开屏 / 悬浮广告 ----------
+^https?:\/\/api\.zhihu\.com\/commercial_api\/(launch_v2|real_time_launch_v2|app_float_layer) data-type=text data="{}" status-code=200
+
+# ---------- 小红书 开屏 ----------
+^https?:\/\/edith\.xiaohongshu\.com\/api\/sns\/v\d\/system_service\/splash_config data-type=text data="{}" status-code=200
+
+# ---------- 微信 公众号文章广告 ----------
+^https?:\/\/mp\.weixin\.qq\.com\/mp\/(ad_|advertisement|getappmsgad) data-type=text data="{}" status-code=200
+
+[Script]
+# ---------- 哔哩哔哩（app2smile）：开屏、推荐页、Tab 等 JSON 广告 ----------
+bili-json = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/(v2\/(splash\/(list|show)|feed\/index\?)|resource\/show\/tab\/v2),requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-json.js,script-update-interval=0
+
+# ---------- 哔哩哔哩（app2smile）：动态、播放页等 protobuf 广告 ----------
+bili-proto = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.(viewunite\.v1\.View\/View|dynamic\.v2\.Dynamic\/DynAll)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-proto.js,script-update-interval=0
+
+[MITM]
+hostname = %APPEND% guide-acs.m.taobao.com, acs.m.taobao.com, acs.m.goofish.com, gw.alicdn.com, heic.alicdn.com, api.m.jd.com, img*.360buyimg.com, wmapi.meituan.com, peisongapi.meituan.com, img.meituan.net, p*.meituan.net, s3plus.meituan.net, flowplus.meituan.net, res.xiaojukeji.com, app.bilibili.com, grpc.biliapi.net, newclient.map.baidu.com, m5.amap.com, m5-zb.amap.com, api.zhihu.com, edith.xiaohongshu.com, mp.weixin.qq.com
