@@ -1,8 +1,12 @@
 /*
- * Vvebo 用户主页修复 v2
+ * Vvebo 用户主页修复 v4
  * 原理：Vvebo 使用的 /2/statuses/user_timeline 已失效，
  * 改写为微博轻享版使用的 /2/profile/statuses/tab，再把返回数据转成旧格式。
+ * v4：每页数量降为 20，避免响应过大导致脚本超时/内存不足
  */
+
+const DEBUG = true; // 出问题时弹通知，正常后改为 false
+const PAGE_SIZE = "20";
 
 const KEY_UID = "vvebo_fix_uid";
 const KEY_NAME = "vvebo_fix_name_";
@@ -11,6 +15,11 @@ const TAG = "_vvebo_fix";
 
 function log(msg) {
   console.log("[VveboFix] " + msg);
+}
+
+function notify(subtitle, body) {
+  log(subtitle + " | " + body);
+  if (DEBUG) $notification.post("Vvebo 修复", subtitle, body);
 }
 
 function getParam(u, name) {
@@ -35,91 +44,130 @@ function setParam(u, name, value) {
   return u + sep + name + "=" + encodeURIComponent(value);
 }
 
+function saveUser(d) {
+  const id = d && (d.idstr || (d.id ? String(d.id) : ""));
+  if (!id) return null;
+  if (d.screen_name) $persistentStore.write(id, KEY_NAME + d.screen_name);
+  return id;
+}
+
 // 1. users/show：记录 uid 以及 昵称→uid 映射
 function handleUserShow() {
   if (typeof $response !== "undefined") {
     try {
-      const d = JSON.parse($response.body);
-      const id = d.idstr || (d.id ? String(d.id) : "");
-      if (id) {
-        $persistentStore.write(id, KEY_UID);
-        if (d.screen_name) $persistentStore.write(id, KEY_NAME + d.screen_name);
-        log("users/show 记录 uid=" + id + " name=" + (d.screen_name || ""));
-      } else {
-        log("users/show 响应中没有 id，keys=" + Object.keys(d).join(","));
-      }
-    } catch (e) {
-      log("users/show 解析失败: " + e);
-    }
+      const id = saveUser(JSON.parse($response.body));
+      if (id) $persistentStore.write(id, KEY_UID);
+    } catch (e) {}
   } else {
     const uid = getParam($request.url, "uid");
     if (uid) $persistentStore.write(uid, KEY_UID);
-    log("users/show 请求 uid=" + uid + " screen_name=" + getParam($request.url, "screen_name"));
   }
   $done({});
 }
 
-// 2. user_timeline 请求：改写为 profile/statuses/tab
-function handleTimelineRequest() {
-  const url = $request.url;
-  let uid = getParam(url, "uid");
-  let source = "uid参数";
+// 用昵称实时查询 uid（沿用当前请求的登录参数）
+function lookupUidByName(name, callback) {
+  let u = $request.url.replace("/2/statuses/user_timeline", "/2/users/show");
+  ["uid", "max_id", "since_id", "page", "count", "feature", "screen_name"].forEach((k) => {
+    u = removeParam(u, k);
+  });
+  u = setParam(u, "screen_name", name);
+  const headers = Object.assign({}, $request.headers);
+  delete headers["Content-Length"];
+  delete headers["content-length"];
 
-  if (!uid) {
-    const name = getParam(url, "screen_name");
-    if (name) {
-      uid = $persistentStore.read(KEY_NAME + name);
-      source = "昵称映射(" + name + ")";
+  $httpClient.get({ url: u, headers: headers }, (err, resp, body) => {
+    if (err) {
+      callback(null, "查询失败: " + err);
+      return;
     }
-  }
-  if (!uid) {
-    uid = $persistentStore.read(KEY_UID);
-    source = "最近记录";
-  }
+    try {
+      const id = saveUser(JSON.parse(body));
+      callback(id, id ? null : "查询结果无 uid: " + String(body).slice(0, 120));
+    } catch (e) {
+      callback(null, "查询结果解析失败");
+    }
+  });
+}
 
-  log("user_timeline 原始请求参数: uid=" + getParam(url, "uid") +
-      " screen_name=" + getParam(url, "screen_name") +
-      " max_id=" + getParam(url, "max_id") +
-      " → 使用 uid=" + uid + "（来源：" + source + "）");
-
-  if (!uid) {
-    log("拿不到 uid，放行原请求");
-    $done({});
-    return;
-  }
-
+// 2. user_timeline 请求：改写为 profile/statuses/tab
+function rewriteTimeline(uid, source) {
+  const url = $request.url;
   let newUrl = url.replace("/2/statuses/user_timeline", "/2/profile/statuses/tab");
   const maxId = getParam(url, "max_id");
   newUrl = removeParam(newUrl, "max_id");
   newUrl = removeParam(newUrl, "since_id");
+  newUrl = setParam(newUrl, "count", PAGE_SIZE);
   newUrl = setParam(newUrl, "containerid", "230413" + uid + "_-_WEIBO_SECOND_PROFILE_WEIBO");
 
   if (maxId && maxId !== "0") {
     const since = $persistentStore.read(KEY_SINCE + uid);
     if (since) newUrl = setParam(newUrl, "since_id", since);
-    log("翻页，since_id=" + since);
   }
 
   newUrl = setParam(newUrl, TAG, "1");
+  newUrl = setParam(newUrl, "_vvebo_src", source);
+  log("改写 uid=" + uid + " 来源=" + source);
   $done({ url: newUrl });
+}
+
+function handleTimelineRequest() {
+  const url = $request.url;
+  const uidParam = getParam(url, "uid");
+  const name = getParam(url, "screen_name");
+
+  if (uidParam) {
+    rewriteTimeline(uidParam, "uid");
+    return;
+  }
+
+  if (name) {
+    const cached = $persistentStore.read(KEY_NAME + name);
+    if (cached) {
+      rewriteTimeline(cached, "name_cache");
+      return;
+    }
+    lookupUidByName(name, (id, err) => {
+      if (id) {
+        rewriteTimeline(id, "name_lookup");
+      } else {
+        notify("无法获取 uid", "昵称：" + name + "\n" + err);
+        $done({});
+      }
+    });
+    return;
+  }
+
+  const last = $persistentStore.read(KEY_UID);
+  if (last) {
+    rewriteTimeline(last, "last");
+  } else {
+    notify("无法获取 uid", "请求中没有 uid 和 screen_name");
+    $done({});
+  }
 }
 
 // 3. profile/statuses/tab 响应：转换为旧格式
 function handleTimelineResponse() {
+  const reqUrl = $request.url;
+  const containerid = getParam(reqUrl, "containerid") || "";
+  const m = containerid.match(/^230413(\d+)/);
+  const uid = m ? m[1] : null;
+  const source = getParam(reqUrl, "_vvebo_src") || "?";
+  const isFirstPage = !getParam(reqUrl, "since_id");
+  const size = ($response.body || "").length;
+
   let data;
   try {
     data = JSON.parse($response.body);
   } catch (e) {
-    log("响应不是 JSON，长度=" + ($response.body || "").length);
+    notify("响应不是 JSON", "uid=" + uid + " 状态码=" + $response.status + " 大小=" + size);
     $done({});
     return;
   }
 
-  log("响应 keys=" + Object.keys(data).join(","));
-
-  // 接口报错：把错误信息传给 Vvebo
   if (data.errno || data.error_code || data.errmsg) {
-    log("接口报错: " + JSON.stringify(data).slice(0, 300));
+    notify("接口报错", "uid=" + uid + "（" + source + "）\n" + JSON.stringify(data).slice(0, 200));
     $done({
       body: JSON.stringify({
         error: data.errmsg || data.error || "请求失败",
@@ -128,10 +176,6 @@ function handleTimelineResponse() {
     });
     return;
   }
-
-  const containerid = getParam($request.url, "containerid") || "";
-  const m = containerid.match(/^230413(\d+)/);
-  const uid = m ? m[1] : null;
 
   const statuses = [];
   const seen = {};
@@ -149,23 +193,29 @@ function handleTimelineResponse() {
         statuses.push(s);
       }
     }
-    if (Array.isArray(card.card_group)) card.card_group.forEach(walk);
+    ["card_group", "items", "cards"].forEach((k) => {
+      if (Array.isArray(card[k])) card[k].forEach(walk);
+    });
   };
   (data.cards || []).forEach(walk);
 
   const info = data.cardlistInfo || {};
   const sinceId = info.since_id ? String(info.since_id) : "";
+  const total = info.total || 1000;
   if (uid) $persistentStore.write(sinceId, KEY_SINCE + uid);
+  data = null; // 尽早释放内存
 
-  log("uid=" + uid + " cards=" + (data.cards || []).length +
-      " card_types=" + types.join(",") +
-      " 解析出微博=" + statuses.length +
-      " since_id=" + sinceId);
+  if (statuses.length === 0 && isFirstPage) {
+    notify(
+      "首页解析出 0 条微博",
+      "uid=" + uid + "（" + source + "）大小=" + size + "\ntypes=" + types.join(",")
+    );
+  }
 
   $done({
     body: JSON.stringify({
       statuses: statuses,
-      total_number: info.total || 1000,
+      total_number: total,
       since_id: sinceId,
       next_cursor: sinceId ? 1 : 0,
     }),
@@ -173,14 +223,19 @@ function handleTimelineResponse() {
 }
 
 (function main() {
-  const url = $request.url;
-  if (/\/2\/users\/show\?/.test(url)) {
-    handleUserShow();
-  } else if (/\/2\/statuses\/user_timeline\?/.test(url)) {
-    handleTimelineRequest();
-  } else if (/\/2\/profile\/statuses\/tab\?/.test(url) && typeof $response !== "undefined") {
-    handleTimelineResponse();
-  } else {
+  try {
+    const url = $request.url;
+    if (/\/2\/users\/show\?/.test(url)) {
+      handleUserShow();
+    } else if (/\/2\/statuses\/user_timeline\?/.test(url)) {
+      handleTimelineRequest();
+    } else if (/\/2\/profile\/statuses\/tab\?/.test(url) && typeof $response !== "undefined") {
+      handleTimelineResponse();
+    } else {
+      $done({});
+    }
+  } catch (e) {
+    notify("脚本异常", String(e));
     $done({});
   }
 })();
