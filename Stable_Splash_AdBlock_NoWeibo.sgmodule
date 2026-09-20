@@ -1,0 +1,96 @@
+#!name=Stable Splash AdBlock All-in-One
+#!desc=常用App开屏广告优先｜稳定版 All-in-One。已取消微博专项去广告；通用广告拦截 + B站专项去广告，MITM仅用于B站两个必要域名。
+#!author=ChatGPT customized
+#!category=AdBlock
+#!system=ios
+
+[Rule]
+# ===== 通用第三方广告/追踪 SDK：域名级拦截，不需要 MITM =====
+DOMAIN-SUFFIX,umeng.com,REJECT
+DOMAIN-SUFFIX,umengcloud.com,REJECT
+DOMAIN-SUFFIX,umeng.co,REJECT
+
+# 阿里系统计/广告 SDK（只拦明确主机，不拦 taobao/tmall/闲鱼核心域名）
+DOMAIN,adashx.ut.taobao.com,REJECT
+DOMAIN,adashbc.ut.taobao.com,REJECT
+DOMAIN,adash-c.ut.taobao.com,REJECT
+DOMAIN,adash.man.aliyuncs.com,REJECT
+
+# 腾讯广告联盟
+DOMAIN,mi.gdt.qq.com,REJECT
+DOMAIN,v2mi.gdt.qq.com,REJECT
+DOMAIN,pgdt.gtimg.cn,REJECT
+DOMAIN,pgdt.ugdtimg.com,REJECT
+DOMAIN,v.gdt.qq.com,REJECT
+DOMAIN,win.gdt.qq.com,REJECT
+DOMAIN,report.gdt.qq.com,REJECT
+DOMAIN,adsmind.ugdtimg.com,REJECT
+
+# 穿山甲 / Pangle（保守）
+DOMAIN,pangolin.snssdk.com,REJECT
+DOMAIN,pangolin16.snssdk.com,REJECT
+DOMAIN,pangolin16.isnssdk.com,REJECT
+DOMAIN,pangolin-lq.snssdk.com,REJECT
+
+# 快手广告联盟
+DOMAIN,open.e.kuaishou.com,REJECT
+
+# 百度广告（不拦 baidu.com 搜索核心接口）
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,als.baidu.com,REJECT
+DOMAIN,cbjs.baidu.com,REJECT
+DOMAIN,cpro.baidu.com,REJECT
+DOMAIN,cpro.baidustatic.com,REJECT
+DOMAIN,dup.baidustatic.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+
+# 京东明显广告域名
+DOMAIN,ads-union.jd.com,REJECT
+DOMAIN,du.jd.com,REJECT
+
+# ===== 精确开屏/启动广告接口 =====
+# 京东：只匹配启动广告 functionId，不拦 api.m.jd.com 其他请求
+URL-REGEX,^https?:\/\/api\.m\.jd\.com\/client\.action\?.*functionId=(home_launchConfig|start)(&|$),REJECT
+
+# 京东金融启动图
+URL-REGEX,^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/aladdin\/(new)?na\/m\/getLoadingPicture,REJECT
+URL-REGEX,^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/base\/(new)?na\/m\/adInfo,REJECT
+
+# 美团外卖：精确启动/开屏接口
+URL-REGEX,^https?:\/\/wmapi\.meituan\.com\/api\/v\d+\/(openscreen|startpicture)(\?|$),REJECT
+
+# 微博：不做专项去广告处理，优先保证完整功能和连接稳定
+
+# 拼多多：已知开屏接口
+URL-REGEX,^https?:\/\/api\.(pinduoduo|yangkeduo)\.com\/api\/cappuccino\/splash,REJECT
+
+# 豆瓣：已知开屏
+URL-REGEX,^https?:\/\/api\.douban\.com\/v2\/app_ads\/splash,REJECT
+
+# Keep：广告/预加载
+URL-REGEX,^https?:\/\/api\.gotokeep\.com\/ads(\/v\d\/ads\/preload)?(\?|$),REJECT
+
+# 麦当劳：启动富媒体/开屏
+URL-REGEX,^https?:\/\/api\.mcd\.cn\/bff\/portal\/(richpop|home\/splash),REJECT
+
+# ===== 重要：故意不做以下激进处理 =====
+# 1. 除B站两个必要域名外，不对其他App添加MITM，避免微博 api.weibo.cn 等证书固定导致 MitM Failed。
+# 2. 不整体 REJECT api.m.jd.com / wmapi.meituan.com 等核心域名，只精确匹配开屏路径。
+# 3. 淘宝、闲鱼、滴滴、大众点评：暂以广告联盟域名拦截为主，不猜测核心接口。
+# 4. Bilibili：已整合 App2smile 当前专项规则；MITM仅限 app.bilibili.com 与 grpc.biliapi.net。
+#
+# 注意：HTTPS URL-REGEX 是否能看到完整 URL 取决于连接是否被解密。
+# 本模块刻意不自动开启 MITM，因此“稳定”优先于“100% 去开屏”。
+
+# ===== Bilibili 专项：整合 App2smile 当前 Surge 规则 =====
+[MITM]
+hostname = %APPEND% app.bilibili.com, grpc.biliapi.net
+
+[Script]
+# B站：开屏、推荐页等 JSON 广告
+bili-json = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/(v2\/(splash\/(list|show)|feed\/index\?)|resource\/show\/tab\/v2),requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-json.js,script-update-interval=0
+
+# B站：动态/播放页等 protobuf 广告
+bili-proto = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.(viewunite\.v1\.View\/View|dynamic\.v2\.Dynamic\/DynAll)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-proto.js,script-update-interval=0
