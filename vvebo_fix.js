@@ -5,7 +5,7 @@
  * v4：每页数量降为 20，避免响应过大导致脚本超时/内存不足
  */
 
-const DEBUG = true; // 出问题时弹通知，正常后改为 false
+const DEBUG = false; // 出问题需要排查时改为 true
 const PAGE_SIZE = "20";
 
 const KEY_UID = "vvebo_fix_uid";
