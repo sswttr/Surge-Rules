@@ -1,4 +1,4 @@
-#!name=VVebo User Timeline Fix
+#!name=VVebo User Timeline Fix V2
 #!desc=修复旧版 VVebo 用户主页 user_timeline 请求缺少 uid 的问题
 
 [Script]
