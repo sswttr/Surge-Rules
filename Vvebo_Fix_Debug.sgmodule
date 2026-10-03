@@ -1,1 +1,9 @@
+#!name=Vvebo 主页修复-调试A
+#!desc=仅改写请求，不处理响应
+#!category=微博
 
+[Script]
+vvebo-timeline-req = type=http-request,pattern=^https?:\/\/api\.weibo\.cn\/2\/statuses\/user_timeline\?,script-path=https://raw.githubusercontent.com/sswttr/Surge-Rules/main/vvebo_fix.js,timeout=10
+
+[MITM]
+hostname = %APPEND% api.weibo.cn
