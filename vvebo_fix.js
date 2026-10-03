@@ -1,8 +1,8 @@
 /*
- * Vvebo 用户主页修复 v4
+ * Vvebo 用户主页修复 v5
  * 原理：Vvebo 使用的 /2/statuses/user_timeline 已失效，
  * 改写为微博轻享版使用的 /2/profile/statuses/tab，再把返回数据转成旧格式。
- * v4：每页数量降为 20，避免响应过大导致脚本超时/内存不足
+ * v5：移除 users/show 的响应脚本，避免首页刷新被拖慢
  */
 
 const DEBUG = false; // 出问题需要排查时改为 true
@@ -44,23 +44,14 @@ function setParam(u, name, value) {
   return u + sep + name + "=" + encodeURIComponent(value);
 }
 
-function saveUser(d) {
-  const id = d && (d.idstr || (d.id ? String(d.id) : ""));
-  if (!id) return null;
-  if (d.screen_name) $persistentStore.write(id, KEY_NAME + d.screen_name);
-  return id;
-}
-
-// 1. users/show：记录 uid 以及 昵称→uid 映射
+// 1. users/show 请求：只读 URL 里的 uid / 昵称，不读响应体
 function handleUserShow() {
-  if (typeof $response !== "undefined") {
-    try {
-      const id = saveUser(JSON.parse($response.body));
-      if (id) $persistentStore.write(id, KEY_UID);
-    } catch (e) {}
-  } else {
-    const uid = getParam($request.url, "uid");
-    if (uid) $persistentStore.write(uid, KEY_UID);
+  const url = $request.url;
+  const uid = getParam(url, "uid");
+  const name = getParam(url, "screen_name");
+  if (uid) {
+    $persistentStore.write(uid, KEY_UID);
+    if (name) $persistentStore.write(uid, KEY_NAME + name);
   }
   $done({});
 }
@@ -82,8 +73,14 @@ function lookupUidByName(name, callback) {
       return;
     }
     try {
-      const id = saveUser(JSON.parse(body));
-      callback(id, id ? null : "查询结果无 uid: " + String(body).slice(0, 120));
+      const d = JSON.parse(body);
+      const id = d && (d.idstr || (d.id ? String(d.id) : ""));
+      if (id) {
+        $persistentStore.write(id, KEY_NAME + name);
+        callback(id, null);
+      } else {
+        callback(null, "查询结果无 uid");
+      }
     } catch (e) {
       callback(null, "查询结果解析失败");
     }
@@ -203,7 +200,7 @@ function handleTimelineResponse() {
   const sinceId = info.since_id ? String(info.since_id) : "";
   const total = info.total || 1000;
   if (uid) $persistentStore.write(sinceId, KEY_SINCE + uid);
-  data = null; // 尽早释放内存
+  data = null;
 
   if (statuses.length === 0 && isFirstPage) {
     notify(
