@@ -1,5 +1,5 @@
 #!name=国内常用App去广告 合并版（不含微博）
-#!desc=主攻开屏广告：淘宝、闲鱼、京东、美团、大众点评、滴滴、哔哩哔哩、百度地图、高德地图、知乎、小红书、同花顺、PICOOC 等；B站额外去除推荐/动态/播放页广告；附带微信公众号/朋友圈媒体广告与常见广告 SDK 拦截。需开启 MitM 并信任证书。
+#!desc=主攻开屏广告：淘宝、闲鱼、京东、美团、大众点评、滴滴、哔哩哔哩、百度地图、高德地图、知乎、小红书、同花顺、PICOOC 等；B站额外去除推荐/动态/播放页广告；附带微信公众号/朋友圈媒体广告与常见广告 SDK 拦截。需开启 MitM 并信任证书。（v2：修复美团买药等图片无法加载）
 #!category=去广告
 #!system=ios
 
@@ -9,6 +9,8 @@
 #  2. 装好后建议清除各 App 缓存或删除重装一次（开屏素材常被预下载）。
 #  3. 若某个 App 出现无法联网，先把它的主机名从 [MITM] 中删掉排查。
 #  4. B站脚本来自 app2smile/rules，首次启用需能访问 raw.githubusercontent.com。
+#  5. v2 更新：美团 MitM 主机名由 p*.meituan.net 收窄为 p?.meituan.net，
+#     不再误伤 p1.d.meituan.net、p14.d.meituan.net 等图片 CDN（这些域名不接受解密）。
 # ========================================================
 
 [Rule]
@@ -143,4 +145,5 @@ bili-json = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/(v2\/(s
 bili-proto = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.(viewunite\.v1\.View\/View|dynamic\.v2\.Dynamic\/DynAll)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-proto.js,script-update-interval=0
 
 [MITM]
-hostname = %APPEND% guide-acs.m.taobao.com, acs.m.taobao.com, acs.m.goofish.com, gw.alicdn.com, heic.alicdn.com, api.m.jd.com, img*.360buyimg.com, wmapi.meituan.com, peisongapi.meituan.com, img.meituan.net, p*.meituan.net, s3plus.meituan.net, flowplus.meituan.net, res.xiaojukeji.com, app.bilibili.com, grpc.biliapi.net, newclient.map.baidu.com, m5.amap.com, m5-zb.amap.com, api.zhihu.com, edith.xiaohongshu.com, mp.weixin.qq.com
+# 美团：p?.meituan.net 只匹配 p0~p9.meituan.net，不会再匹配 p1.d.meituan.net / p14.d.meituan.net 等图片 CDN
+hostname = %APPEND% guide-acs.m.taobao.com, acs.m.taobao.com, acs.m.goofish.com, gw.alicdn.com, heic.alicdn.com, api.m.jd.com, img*.360buyimg.com, wmapi.meituan.com, peisongapi.meituan.com, img.meituan.net, p?.meituan.net, s3plus.meituan.net, flowplus.meituan.net, res.xiaojukeji.com, app.bilibili.com, grpc.biliapi.net, newclient.map.baidu.com, m5.amap.com, m5-zb.amap.com, api.zhihu.com, edith.xiaohongshu.com, mp.weixin.qq.com
