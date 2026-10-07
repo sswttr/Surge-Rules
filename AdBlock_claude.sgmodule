@@ -1,5 +1,5 @@
 #!name=国内常用App去广告 合并版（不含微博）
-#!desc=主攻开屏广告：淘宝、闲鱼、京东、美团、大众点评、滴滴、哔哩哔哩、百度地图、高德地图、知乎、小红书、同花顺、PICOOC 等；B站额外去除推荐/动态/播放页广告；附带微信公众号/朋友圈媒体广告与常见广告 SDK 拦截。需开启 MitM 并信任证书。（v2：修复美团买药等图片无法加载）
+#!desc=主攻开屏广告：淘宝、闲鱼、京东、美团、大众点评、滴滴、哔哩哔哩、百度地图、高德地图、知乎、小红书、同花顺、PICOOC 等；B站额外去除推荐/动态/播放页广告；附带微信公众号/朋友圈媒体广告与常见广告 SDK 拦截。需开启 MitM 并信任证书。（2026-10-07 更新：广告 SDK 改用 REJECT-DROP，新增 1rtb）
 #!category=去广告
 #!system=ios
 
@@ -9,8 +9,8 @@
 #  2. 装好后建议清除各 App 缓存或删除重装一次（开屏素材常被预下载）。
 #  3. 若某个 App 出现无法联网，先把它的主机名从 [MITM] 中删掉排查。
 #  4. B站脚本来自 app2smile/rules，首次启用需能访问 raw.githubusercontent.com。
-#  5. v2 更新：美团 MitM 主机名由 p*.meituan.net 收窄为 p?.meituan.net，
-#     不再误伤 p1.d.meituan.net、p14.d.meituan.net 等图片 CDN（这些域名不接受解密）。
+#  5. 广告 SDK 统一用 REJECT-DROP（静默丢弃），避免 SDK 被拒后疯狂重试。
+#     amdc / dns.jd.com 仍用 REJECT，因为它们需要“立即失败”才能让 App 快速回落。
 # ========================================================
 
 [Rule]
@@ -20,17 +20,17 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443)),REJECT-NO-DROP
 # ---------- 阿里系（淘宝/闲鱼/高德）：拒绝 AMDC 调度，让请求回落到可 MitM 的 HTTPS ----------
 DOMAIN,amdc.m.taobao.com,REJECT
 # 阿里统计上报
-DOMAIN,adashx.ut.taobao.com,REJECT
-DOMAIN,adashbc.ut.taobao.com,REJECT
-DOMAIN,adash-c.ut.taobao.com,REJECT
-DOMAIN,adash.man.aliyuncs.com,REJECT
+DOMAIN,adashx.ut.taobao.com,REJECT-DROP
+DOMAIN,adashbc.ut.taobao.com,REJECT-DROP
+DOMAIN,adash-c.ut.taobao.com,REJECT-DROP
+DOMAIN,adash.man.aliyuncs.com,REJECT-DROP
 
 # ---------- 京东 ----------
 DOMAIN,dns.jd.com,REJECT
-DOMAIN-SUFFIX,dsp-x.jd.com,REJECT
-DOMAIN-SUFFIX,bdsp-x.jd.com,REJECT
-DOMAIN,ads-union.jd.com,REJECT
-DOMAIN,du.jd.com,REJECT
+DOMAIN-SUFFIX,dsp-x.jd.com,REJECT-DROP
+DOMAIN-SUFFIX,bdsp-x.jd.com,REJECT-DROP
+DOMAIN,ads-union.jd.com,REJECT-DROP
+DOMAIN,du.jd.com,REJECT-DROP
 
 # ---------- 微信：朋友圈广告图片/视频 CDN ----------
 DOMAIN,wxsnsdy.wxs.qq.com,REJECT
@@ -44,41 +44,43 @@ DOMAIN,ads-img-al.xhscdn.com,REJECT
 DOMAIN,ads-video-al.xhscdn.com,REJECT
 
 # ---------- 知乎广告/追踪 ----------
-DOMAIN,sugar.zhihu.com,REJECT
+DOMAIN,sugar.zhihu.com,REJECT-DROP
 
 # ---------- 同花顺广告 ----------
-DOMAIN,adm.10jqka.com.cn,REJECT
+DOMAIN,adm.10jqka.com.cn,REJECT-DROP
 
 # ---------- 通用广告 SDK（覆盖 PICOOC 等使用第三方开屏 SDK 的 App，也会减少小程序广告） ----------
 # 腾讯广点通 / 优量汇
-DOMAIN-SUFFIX,gdt.qq.com,REJECT
-DOMAIN,sdk.e.qq.com,REJECT
-DOMAIN,pgdt.gtimg.cn,REJECT
-DOMAIN,pgdt.ugdtimg.com,REJECT
-DOMAIN,adsmind.gdtimg.com,REJECT
-DOMAIN,adsmind.ugdtimg.com,REJECT
+DOMAIN-SUFFIX,gdt.qq.com,REJECT-DROP
+DOMAIN,sdk.e.qq.com,REJECT-DROP
+DOMAIN,pgdt.gtimg.cn,REJECT-DROP
+DOMAIN,pgdt.ugdtimg.com,REJECT-DROP
+DOMAIN,adsmind.gdtimg.com,REJECT-DROP
+DOMAIN,adsmind.ugdtimg.com,REJECT-DROP
 # 字节穿山甲
-DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT
-DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT
-DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
-DOMAIN,pangolin.snssdk.com,REJECT
-DOMAIN,pangolin16.snssdk.com,REJECT
-DOMAIN,pangolin16.isnssdk.com,REJECT
-DOMAIN,pangolin-lq.snssdk.com,REJECT
+DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT-DROP
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT-DROP
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT-DROP
+DOMAIN,pangolin.snssdk.com,REJECT-DROP
+DOMAIN,pangolin16.snssdk.com,REJECT-DROP
+DOMAIN,pangolin16.isnssdk.com,REJECT-DROP
+DOMAIN,pangolin-lq.snssdk.com,REJECT-DROP
 # 百度百青藤 / 百度联盟
-DOMAIN,mobads.baidu.com,REJECT
-DOMAIN,mobads-logs.baidu.com,REJECT
-DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
-DOMAIN,afd.baidu.com,REJECT
-DOMAIN,cpro.baidu.com,REJECT
-DOMAIN,cpro.baidustatic.com,REJECT
-DOMAIN,dup.baidustatic.com,REJECT
-DOMAIN,cbjs.baidu.com,REJECT
+DOMAIN,mobads.baidu.com,REJECT-DROP
+DOMAIN,mobads-logs.baidu.com,REJECT-DROP
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT-DROP
+DOMAIN,afd.baidu.com,REJECT-DROP
+DOMAIN,cpro.baidu.com,REJECT-DROP
+DOMAIN,cpro.baidustatic.com,REJECT-DROP
+DOMAIN,dup.baidustatic.com,REJECT-DROP
+DOMAIN,cbjs.baidu.com,REJECT-DROP
 # 快手联盟
-DOMAIN,open.e.kuaishou.com,REJECT
+DOMAIN,open.e.kuaishou.com,REJECT-DROP
 # Sigmob
-DOMAIN-SUFFIX,sigmob.cn,REJECT
-DOMAIN-SUFFIX,sigmob.com,REJECT
+DOMAIN-SUFFIX,sigmob.cn,REJECT-DROP
+DOMAIN-SUFFIX,sigmob.com,REJECT-DROP
+# 1RTB 程序化广告平台（PICOOC 开屏跳转美团的来源之一）
+DOMAIN-SUFFIX,1rtb.com,REJECT-DROP
 
 [URL Rewrite]
 # ---------- 淘宝 / 闲鱼 开屏图片 ----------
@@ -145,5 +147,4 @@ bili-json = type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/(v2\/(s
 bili-proto = type=http-response,pattern=^https:\/\/(grpc\.biliapi\.net|app\.bilibili\.com)\/bilibili\.app\.(viewunite\.v1\.View\/View|dynamic\.v2\.Dynamic\/DynAll)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/bilibili-proto.js,script-update-interval=0
 
 [MITM]
-# 美团：p?.meituan.net 只匹配 p0~p9.meituan.net，不会再匹配 p1.d.meituan.net / p14.d.meituan.net 等图片 CDN
-hostname = %APPEND% guide-acs.m.taobao.com, acs.m.taobao.com, acs.m.goofish.com, gw.alicdn.com, heic.alicdn.com, api.m.jd.com, img*.360buyimg.com, wmapi.meituan.com, peisongapi.meituan.com, img.meituan.net, p?.meituan.net, s3plus.meituan.net, flowplus.meituan.net, res.xiaojukeji.com, app.bilibili.com, grpc.biliapi.net, newclient.map.baidu.com, m5.amap.com, m5-zb.amap.com, api.zhihu.com, edith.xiaohongshu.com, mp.weixin.qq.com
+hostname = %APPEND% guide-acs.m.taobao.com, acs.m.taobao.com, acs.m.goofish.com, gw.alicdn.com, heic.alicdn.com, api.m.jd.com, img*.360buyimg.com, wmapi.meituan.com, peisongapi.meituan.com, img.meituan.net, p*.meituan.net, s3plus.meituan.net, flowplus.meituan.net, res.xiaojukeji.com, app.bilibili.com, grpc.biliapi.net, newclient.map.baidu.com, m5.amap.com, m5-zb.amap.com, api.zhihu.com, edith.xiaohongshu.com, mp.weixin.qq.com
