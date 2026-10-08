@@ -1,0 +1,17 @@
+#!name=Spotify 去广告（Loon 转 Surge）
+#!desc=移除播放广告、恢复歌手列表正常展示；首次启用或更改参数后请重新登录 Spotify。
+#!category=去广告
+#!author=app2smile, 001ProMax（原规则）；Surge 格式转换
+#!arguments=tab:true,useractivity:true
+#!arguments-desc=tab：是否移除底栏创建按钮，true 开启 / false 关闭。\nuseractivity：是否启用 Apple 设备接力，true 开启 / false 关闭。
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/Spotify.png
+
+[URL Rewrite]
+^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/pendragon\/ - reject-dict
+^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/artistview\/v1\/artist\/(.*)&platform=iphone https://spclient.wg.spotify.com/artistview/v1/artist/$1&platform=ipad header
+
+[Script]
+Spotify-Protobuf = type=http-response, pattern=^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/(?:bootstrap|user-customization-service), script-path=https://raw.githubusercontent.com/001ProMax/Surge/refs/heads/main/Script/Spotify.Crack.Dev.js, requires-body=true, binary-body-mode=true, timeout=3, argument="[{{{tab}}},{{{useractivity}}}]"
+
+[MITM]
+hostname = %APPEND% *-spclient.spotify.com, spclient.wg.spotify.com
