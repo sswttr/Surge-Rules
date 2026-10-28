@@ -1,0 +1,49 @@
+# NAME: X + Grok + GrokBot
+# DESC: X (Twitter) / Grok / xAI 合并分流规则 for Surge
+# UPDATED: 2026-10-28
+# USAGE: RULE-SET,https://raw.githubusercontent.com/<用户名>/<仓库>/main/X-Grok.list,<策略组>
+
+# ========== xAI / Grok ==========
+DOMAIN-SUFFIX,x.ai
+DOMAIN-SUFFIX,grok.com
+DOMAIN-SUFFIX,grokipedia.com
+DOMAIN-KEYWORD,grok
+
+# ========== X / Twitter 主站 ==========
+DOMAIN-SUFFIX,x.com
+DOMAIN-SUFFIX,twitter.com
+DOMAIN-SUFFIX,twitter.co
+DOMAIN-SUFFIX,twitter.jp
+DOMAIN-SUFFIX,twitter.biz
+DOMAIN-SUFFIX,twttr.com
+DOMAIN-SUFFIX,twitterinc.com
+DOMAIN-SUFFIX,twittercommunity.com
+DOMAIN-SUFFIX,twitterstat.us
+DOMAIN-SUFFIX,tweetdeck.com
+
+# ========== 短链 / 静态资源 / CDN ==========
+DOMAIN-SUFFIX,t.co
+DOMAIN-SUFFIX,twimg.com
+DOMAIN-SUFFIX,twimg.org
+DOMAIN-SUFFIX,cms-twdigitalassets.com
+DOMAIN-SUFFIX,twtrdns.net
+
+# ========== 广告 / 统计 ==========
+DOMAIN-SUFFIX,ads-twitter.com
+
+# ========== 旧服务（Periscope / Vine 等）==========
+DOMAIN-SUFFIX,periscope.tv
+DOMAIN-SUFFIX,pscp.tv
+DOMAIN-SUFFIX,twitpic.com
+DOMAIN-SUFFIX,vine.co
+
+# ========== IP（Twitter AS13414）==========
+IP-ASN,13414,no-resolve
+IP-CIDR,69.195.160.0/19,no-resolve
+IP-CIDR,104.244.40.0/21,no-resolve
+IP-CIDR,192.133.76.0/22,no-resolve
+IP-CIDR,199.16.156.0/22,no-resolve
+IP-CIDR,199.59.148.0/22,no-resolve
+IP-CIDR,199.96.56.0/21,no-resolve
+IP-CIDR,202.160.128.0/22,no-resolve
+IP-CIDR,209.237.192.0/19,no-resolve
