@@ -1,10 +1,9 @@
 # NAME: Claude-Full
-# UPDATED: 2026-09-10
+# UPDATED: 2026-11-23
 # FORMAT: Surge RULE-SET
-# PURPOSE: Claude web/app, Anthropic API, Claude Code, artifacts/files, auth, downloads, support and telemetry.
-# NOTE: Shared third-party domains are deliberately included for maximum coverage.
+# PURPOSE: Claude Web / Desktop / API / Code / Auth / MCP
 
-# Mac app process fallback (Surge Mac 6.0+ App Bundle mode)
+# Mac app process fallback
 PROCESS-NAME,/Applications/Claude.app/
 PROCESS-NAME,Claude
 
@@ -16,6 +15,10 @@ DOMAIN-SUFFIX,claudeusercontent.com
 DOMAIN-SUFFIX,claudemcpclient.com
 DOMAIN-SUFFIX,clau.de
 DOMAIN-SUFFIX,trust.anthropic.com
+
+# NEW: Claude application / MCP content
+DOMAIN-SUFFIX,claude.app
+DOMAIN-SUFFIX,claudemcpcontent.com
 
 # Known exact service / CDN hosts
 DOMAIN,anthropic.com.cdn.cloudflare.net
@@ -33,6 +36,12 @@ DOMAIN,cdn.usefathom.com
 DOMAIN,anthropic.auth0.com
 DOMAIN-SUFFIX,auth0.com
 
+# NEW: Human verification / identity
+DOMAIN-SUFFIX,hcaptcha.com
+DOMAIN,challenges.cloudflare.com
+DOMAIN-SUFFIX,withpersona.com
+DOMAIN-SUFFIX,yoti.com
+
 # Telemetry / feature flags / support
 DOMAIN-SUFFIX,statsig.com
 DOMAIN-SUFFIX,statsigapi.net
@@ -42,6 +51,14 @@ DOMAIN-SUFFIX,intercom.io
 DOMAIN-SUFFIX,intercomcdn.com
 DOMAIN-SUFFIX,usefathom.com
 DOMAIN,browser-intake-us5-datadoghq.com
+
+# NEW: Additional support
+DOMAIN-SUFFIX,intercomassets.com
+DOMAIN-SUFFIX,intercom-messenger.com
+
+# NEW: Fraud prevention / payment
+DOMAIN-SUFFIX,siftscience.com
+DOMAIN,r.stripe.com
 
 # Conservative keyword fallback
 DOMAIN-KEYWORD,anthropic
