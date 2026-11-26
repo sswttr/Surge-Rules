@@ -1,48 +1,86 @@
 # NAME: Gemini-Full
 # UPDATED: 2026-11-26
 # FORMAT: Surge RULE-SET
-# PURPOSE: Gemini web/app, Google AI Studio, Gemini API, DeepMind and Gemini-related backend services.
-# NOTE: Google infrastructure is highly shared. This list aims for broad Gemini coverage without routing all Google traffic.
+# PURPOSE: Gemini web/app, Google AI Studio, Gemini API (AI Studio & Vertex AI), Gemini CLI / Antigravity,
+#          Google Labs, NotebookLM, Jules, Opal, DeepMind, Colab.
+# NOTE: 只收录 Gemini / Google AI 专用域名 + 少量必要的共享校验域名；
+#       google.com、gstatic、googleusercontent 等通用基础设施交给 Google 规则。
+# NOTE: 本规则集不含 IP 规则，可在引用时加 no-resolve。
+# NOTE: DOMAIN-WILDCARD 需要较新版本 Surge；旧版本请改用文末注释掉的 KEYWORD 写法。
 
-# Gemini / Bard / AI Studio core
+# ---------- Gemini / Bard ----------
 DOMAIN-SUFFIX,gemini.google.com
 DOMAIN-SUFFIX,gemini.google
+DOMAIN-SUFFIX,gemini.gstatic.com
 DOMAIN-SUFFIX,bard.google.com
+DOMAIN-SUFFIX,geminicli.com
+
+# ---------- Gemini App / Web 后端（地区检测 / 客户端） ----------
+DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com
+DOMAIN-SUFFIX,geminiweb-pa.googleapis.com
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
+DOMAIN-SUFFIX,geller-pa.googleapis.com
+DOMAIN-SUFFIX,playatoms-pa.googleapis.com
+DOMAIN-SUFFIX,aisandbox-pa.googleapis.com
+
+# ---------- AI Studio / Gemini API ----------
 DOMAIN-SUFFIX,aistudio.google.com
 DOMAIN-SUFFIX,makersuite.google.com
-DOMAIN,ai.google.dev
+DOMAIN-SUFFIX,ai.google.dev
+DOMAIN-SUFFIX,ai.google
+DOMAIN-SUFFIX,generativelanguage.googleapis.com
+DOMAIN-SUFFIX,alkalimakersuite-pa.clients6.google.com
+DOMAIN-SUFFIX,alkalicore-pa.clients6.google.com
+DOMAIN-WILDCARD,developerprofiles*.googleapis.com
+DOMAIN-WILDCARD,developerprofiles*.clients6.google.com
 
-# Google AI Ecosystem (Labs / NotebookLM / Jules)
+# ---------- Vertex AI (Gemini on Google Cloud) ----------
+DOMAIN-SUFFIX,aiplatform.googleapis.com
+DOMAIN-WILDCARD,*-aiplatform.googleapis.com
+
+# ---------- Gemini CLI / Code Assist / Antigravity ----------
+DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
+DOMAIN-SUFFIX,daily-cloudcode-pa.googleapis.com
+DOMAIN-SUFFIX,antigravity.google
+
+# ---------- Google Labs / NotebookLM / Jules / Opal ----------
 DOMAIN-SUFFIX,labs.google
 DOMAIN-SUFFIX,notebooklm.google.com
 DOMAIN-SUFFIX,notebooklm.google
-DOMAIN,jules.google.com
+DOMAIN-SUFFIX,notebook.google.com
+DOMAIN-SUFFIX,jules.google.com
+DOMAIN-SUFFIX,opal.google
+DOMAIN-SUFFIX,stitch.withgoogle.com
+DOMAIN-SUFFIX,aitestkitchen.withgoogle.com
 
-# Google Generative AI / DeepMind
-DOMAIN-SUFFIX,generativeai.google
+# ---------- DeepMind / Generative AI ----------
 DOMAIN-SUFFIX,deepmind.google
 DOMAIN-SUFFIX,deepmind.com
+DOMAIN-SUFFIX,generativeai.google
 
-# Gemini App / MakerSuite API backends (关键地区检测与客户端后端)
-DOMAIN,robinfrontend-pa.googleapis.com
-DOMAIN,aisandbox-pa.googleapis.com
-DOMAIN,daily-cloudcode-pa.googleapis.com
-DOMAIN,playatoms-pa.googleapis.com
-DOMAIN-SUFFIX,generativelanguage.googleapis.com
-DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com
-DOMAIN-SUFFIX,cloudcode-pa.googleapis.com
-DOMAIN-SUFFIX,geller-pa.googleapis.com
-DOMAIN,alkalimakersuite-pa.clients6.google.com
+# ---------- Colab ----------
+DOMAIN-SUFFIX,colab.research.google.com
+DOMAIN-SUFFIX,colab.google
+DOMAIN-WILDCARD,*colab.googleusercontent.com
 
-# Google API bootstrap & client telemetry
+# ---------- 共享域名：反滥用校验 / 加载器（与 Gemini 出口一致可避免登录后打不开） ----------
+DOMAIN-SUFFIX,waa-pa.clients6.google.com
+DOMAIN-SUFFIX,jnn-pa.googleapis.com
 DOMAIN-SUFFIX,apis.google.com
-DOMAIN,play.googleapis.com
+# Chrome 内置 Gemini 功能需要时再启用（会影响 Chrome 其他优化提示请求）
+# DOMAIN-SUFFIX,optimizationguide-pa.googleapis.com
+# Play 服务 / 安卓系统日志，影响面大，默认不分流
+# DOMAIN,play.googleapis.com
 
-# Conservative keyword fallbacks for dynamically named Google AI hosts
-DOMAIN-KEYWORD,gemini
-DOMAIN-KEYWORD,generativelanguage
-DOMAIN-KEYWORD,makersuite
-DOMAIN-KEYWORD,generativeai
-DOMAIN-KEYWORD,deepmind
-DOMAIN-KEYWORD,developerprofiles
-DOMAIN-KEYWORD,colab
+# ---------- 动态主机兜底（仅限 Google 域名，避免误伤 gemini.com 等第三方） ----------
+DOMAIN-WILDCARD,*gemini*.googleapis.com
+DOMAIN-WILDCARD,*gemini*.google.com
+DOMAIN-WILDCARD,*makersuite*.googleapis.com
+DOMAIN-WILDCARD,*makersuite*.google.com
+
+# ---------- 旧版 Surge 兼容（不支持 DOMAIN-WILDCARD 时，删掉上面所有 WILDCARD 行，启用以下几行） ----------
+# DOMAIN-KEYWORD,gemini
+# DOMAIN-KEYWORD,makersuite
+# DOMAIN-KEYWORD,aiplatform
+# DOMAIN-KEYWORD,developerprofiles
+# DOMAIN-KEYWORD,colab
