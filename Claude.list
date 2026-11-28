@@ -1,11 +1,12 @@
 # NAME: Claude-Full
-# UPDATED: 2026-11-23
+# UPDATED: 2026-11-28
 # FORMAT: Surge RULE-SET
-# PURPOSE: Claude Web / Desktop / API / Code / Auth / MCP
+# PURPOSE: Claude Web / Desktop / API / Code / Auth / MCP / Payment
 
 # Mac app process fallback
 PROCESS-NAME,/Applications/Claude.app/
 PROCESS-NAME,Claude
+PROCESS-NAME,Claude Helper
 
 # Anthropic / Claude core
 DOMAIN-SUFFIX,anthropic.com
@@ -14,29 +15,30 @@ DOMAIN-SUFFIX,claude.com
 DOMAIN-SUFFIX,claudeusercontent.com
 DOMAIN-SUFFIX,claudemcpclient.com
 DOMAIN-SUFFIX,clau.de
-DOMAIN-SUFFIX,trust.anthropic.com
 
-# NEW: Claude application / MCP content
+# Claude application / MCP content
 DOMAIN-SUFFIX,claude.app
 DOMAIN-SUFFIX,claudemcpcontent.com
+DOMAIN-SUFFIX,modelcontextprotocol.io
 
-# Known exact service / CDN hosts
+# Extra domains (community common)
+DOMAIN-SUFFIX,claude.dev
+DOMAIN-SUFFIX,claude.site
+DOMAIN-SUFFIX,claude.new
+
+# Known exact CDN hosts
 DOMAIN,anthropic.com.cdn.cloudflare.net
 DOMAIN,servd-anthropic-website.b-cdn.net
-DOMAIN,pivot.claude.ai
-DOMAIN,bridge.claudeusercontent.com
-DOMAIN,platform.claude.com
-DOMAIN,code.claude.com
-DOMAIN,downloads.claude.ai
-DOMAIN,status.claude.com
-DOMAIN,support.claude.com
-DOMAIN,cdn.usefathom.com
+
+# Claude Code updates & feature flags
+# 注意：storage.googleapis.com 为公共域名，若使用按流量计费的家宽/独享 IP 可按需注释
+DOMAIN,storage.googleapis.com
+DOMAIN,cdn.growthbook.io
 
 # Authentication
-DOMAIN,anthropic.auth0.com
 DOMAIN-SUFFIX,auth0.com
 
-# NEW: Human verification / identity
+# Human verification / identity
 DOMAIN-SUFFIX,hcaptcha.com
 DOMAIN,challenges.cloudflare.com
 DOMAIN-SUFFIX,withpersona.com
@@ -49,16 +51,19 @@ DOMAIN-SUFFIX,sentry.io
 DOMAIN-SUFFIX,datadoghq.com
 DOMAIN-SUFFIX,intercom.io
 DOMAIN-SUFFIX,intercomcdn.com
-DOMAIN-SUFFIX,usefathom.com
-DOMAIN,browser-intake-us5-datadoghq.com
-
-# NEW: Additional support
 DOMAIN-SUFFIX,intercomassets.com
 DOMAIN-SUFFIX,intercom-messenger.com
+DOMAIN-SUFFIX,usefathom.com
 
-# NEW: Fraud prevention / payment
+# Fraud prevention / payment (防止支付时 IP 漂移触发风控)
 DOMAIN-SUFFIX,siftscience.com
-DOMAIN,r.stripe.com
+DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,stripe.network
+
+# Anthropic IP ranges & ASN (important fallback)
+IP-CIDR,160.79.104.0/21,no-resolve
+IP-CIDR6,2607:6bc0::/32,no-resolve
+IP-ASN,399358,no-resolve
 
 # Conservative keyword fallback
 DOMAIN-KEYWORD,anthropic
